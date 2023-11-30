@@ -16,50 +16,33 @@ import static java.lang.Boolean.FALSE;
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        //FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("hello-view.fxml"));
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(100);
 
-        Graph graph = new Graph(50);
+        SimulatedAnnealing simulatedAnnealing = new SimulatedAnnealing(100);
 
-        Group root = new Group();
-        //Group r2 = new Group();
-        //Group r3 = new Group();
+        GreedyAlgorithm greedyAlgorithm = new GreedyAlgorithm(100);
 
-        GeneticAlgorithm ga = new GeneticAlgorithm(graph, root);
-        //SA sa = new SA(graph,r2);
-        //GreedyAlgo greedyAlgo = new GreedyAlgo(graph, r3);
+        runAlgorithm(geneticAlgorithm);
+        runAlgorithm(simulatedAnnealing);
+        runAlgorithm(greedyAlgorithm);
+    }
+
+    public static void runAlgorithm(Algorithm algorithm){
+        Group root = algorithm.getGroup();
+        Graph graph = algorithm.getGraph();
 
         root.setAutoSizeChildren(false);
 
+        Stage stage = new Stage();
         Scene scene = new Scene(root, 600, 300);
         stage.setScene(scene);
-        stage.setTitle("Genetic Algorithm");
+        stage.setTitle(algorithm.getAlgorithmName());
         stage.show();
 
-        /*
-        Stage stage2 = new Stage();
-        Scene scene2 = new Scene(r2, 600, 300);
-        stage2.setScene(scene2);
-        stage2.setTitle("Simulated Annealing");
-        stage2.show();
-        */
-
-        /*Stage stage3 = new Stage();
-        Scene scene3 = new Scene(r3, 600, 300);
-        stage3.setScene(scene3);
-        stage3.setTitle("Greedy Algorithm");
-        //stage3.show();*/
-
-
-        ga.Generate();
-        //greedyAlgo.run();
-
+        algorithm.run();
         graph.draw(root);
-        //graph.draw(r2);
-        //graph.draw(r3);
 
-        System.out.println("Genetic Algorithm Length: " + ga.getBestPathLength() );
-        //System.out.println("Simulated Annealing Length: " + sa.getLength() );
-        //System.out.println("Greedy Algorithm Length: " + greedyAlgo.getLength() );
+        System.out.println("Path Length of " + algorithm.getAlgorithmName() + ": " + algorithm.solutionLength() );
     }
 
     public static void main(String[] args) {
