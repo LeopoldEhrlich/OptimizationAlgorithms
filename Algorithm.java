@@ -13,21 +13,33 @@ public abstract class Algorithm {
 
     protected Group lines;
 
-    abstract run();
+    abstract void run();
 
-    public Algorithm(Graph graph, Group group)
+    private String AlgorithmName;
+
+    public Algorithm(Graph graph, Group group, String algorithmName)
     {
         this.graph = graph;
         this.group = group;
 
         this.lines = new Group();
+
+        this.AlgorithmName = algorithmName;
     }
 
-    void drawPath(Member m){
+    public Algorithm(int size, String algorithmName)
+    {
+        this.graph = new Graph(size);
+        this.group = new Group();
+
+        this.AlgorithmName = algorithmName;
+    }
+
+    protected void drawPath(TravelingSalesmanSolution s){
         group.getChildren().removeAll(lines);
         lines = new Group();
 
-        int[] genotype = m.getGenotype();
+        int[] genotype = s.getGenotype();
 
         for(int i = 0; i < genotype.length-1; i++){
             Line line = new Line();
@@ -42,5 +54,19 @@ public abstract class Algorithm {
         }
 
         group.getChildren().add(lines);
+    }
+
+    protected abstract double solutionLength();
+
+    public Graph getGraph() {
+        return graph;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public String getAlgorithmName(){
+        return AlgorithmName;
     }
 }
