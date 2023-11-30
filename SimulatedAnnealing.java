@@ -1,62 +1,52 @@
+
+
 package com.example.genetic_algorithm;
 
 import javafx.scene.Group;
-import javafx.scene.shape.Line;
 
-import java.util.Random;
-
-public class SimulatedAnnealing implements Runnable {
-    Random r = new Random();
-
-    private final Graph graph;
-    private final Group group;
-
-    private Group lines;
-
-    private Member solution;
-
-    Member[] Population;
-    int insertionIndex;
+public class SimulatedAnnealing extends Algorithm {
+    private TravelingSalesmanSolution solution;
 
 
-    public SimulatedAnnealing(Graph graph, Group group, Member[] Population, int insertionIndex)
+
+    public SimulatedAnnealing(Graph graph, Group group)
     {
-        this.graph = graph;
-        this.group = group;
+        super(graph,group, "Simulated Annealing");
+        solution = new TravelingSalesmanSolution(graph.getSize());
+    }
 
-        this.lines = new Group();
-        solution = new Member(graph.getSize());
-
-        this.Population = Population;
-        this.insertionIndex = insertionIndex;
+    public SimulatedAnnealing(int graphSize)
+    {
+        super(graphSize, "Simulated Annealing");
+        solution = new TravelingSalesmanSolution(graphSize);
     }
 
     double temperature = 1;
-    final double minTemp = 0.0001;
+    final double minTemp = 0.000001;
 
-    final int numIterations = 100;
+    final int numIterations = 200;
 
-    public void go()
+    public void run()
     {
-        Member bestSolution = solution;
+        TravelingSalesmanSolution bestSolution = solution;
 
-        for(int repetitions = 0; repetitions < 10; repetitions++){
+        for(int repetitions = 0; repetitions < 20; repetitions++){
             while (temperature > minTemp) {
                 for (int i = 0; i < numIterations; i++) {
-                    Member neighbour = new Member(solution);
+                    TravelingSalesmanSolution neighbour = new TravelingSalesmanSolution(solution);
                     neighbour.mutateSwap();
 
-                    if (neighbour.Fitness(graph.getAdjacency()) < solution.Fitness(graph.getAdjacency())) {
+                    if (neighbour.distanceTravelled(graph.getWeights()) < solution.distanceTravelled(graph.getWeights())) {
                         solution = neighbour;
 
-                        if (solution.Fitness(graph.getAdjacency()) < bestSolution.Fitness(graph.getAdjacency())) {
+                        if (solution.distanceTravelled(graph.getWeights()) < bestSolution.distanceTravelled(graph.getWeights())) {
                             bestSolution = solution;
                         }
                     } else if (changeCheck(neighbour)) {
                         solution = neighbour;
                     }
                 }
-                temperature *= 0.985;
+                temperature *= 0.99;
                 //System.out.println(solution.Fitness(graph.getAdjacency()));
             }
 
@@ -65,24 +55,25 @@ public class SimulatedAnnealing implements Runnable {
 
 
         solution = bestSolution;
+        drawPath();
     }
 
-    private boolean changeCheck(Member neighbour){
-        final double currentFitness = solution.Fitness(graph.getAdjacency());
-        final double neighbourFitness = neighbour.Fitness(graph.getAdjacency());
+    private boolean changeCheck(TravelingSalesmanSolution neighbour){
+        final double currentFitness = solution.distanceTravelled(graph.getWeights());
+        final double neighbourFitness = neighbour.distanceTravelled(graph.getWeights());
 
         final double totalLen = currentFitness + neighbourFitness;
 
-        final double deltaNormalized = (currentFitness/totalLen) - (neighbourFitness/totalLen);
+        final double deltaNormalized = (currentFitness - neighbourFitness)/totalLen;
         return Math.random() < Math.exp(deltaNormalized/temperature);
     }
 
-    public void run(){
-        go();
-
-        Member returnSolution = solution;
-        solution = new Member(graph.getSize());
-
-        Population[insertionIndex] = returnSolution;
+    private void drawPath(){
+        super.drawPath(solution);
     }
+
+    public double solutionLength(){
+        return solution.getLengthOfJourney();
+    }
+
 }
