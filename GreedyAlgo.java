@@ -2,18 +2,22 @@ package com.example.genetic_algorithm;
 
 import javafx.scene.Group;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.HashSet;
 
-public class GreedyAlgo extends Algorithm{
-    private Member[] startingPoints;
-    private Member path;
+public class GreedyAlgorithm extends Algorithm{
+    private TravelingSalesmanSolution[] startingPoints;
+    private TravelingSalesmanSolution path;
 
-    GreedyAlgo(Graph graph, Group group) {
-        super(graph, group);
+    GreedyAlgorithm(Graph graph, Group group) {
+        super(graph, group, "Greedy Algorithm");
 
-        startingPoints = new Member[graph.getSize()];
+        startingPoints = new TravelingSalesmanSolution[graph.getSize()];
+    }
+
+    GreedyAlgorithm(int graphSize) {
+        super(graphSize, "Greedy Algorithm");
+
+        startingPoints = new TravelingSalesmanSolution[graphSize];
     }
 
     public void run(){
@@ -24,13 +28,13 @@ public class GreedyAlgo extends Algorithm{
         return path.getLengthOfJourney();
     }
 
-    private Member generate(){
-        Member fastest = genFromGreed(0);
+    private TravelingSalesmanSolution generate(){
+        TravelingSalesmanSolution fastest = genFromGreed(0);
 
         for(int i = 1; i < startingPoints.length; i++){
             startingPoints[i] = genFromGreed(i);
 
-            if(startingPoints[i].Fitness(graph.getAdjacency()) < fastest.Fitness(graph.getAdjacency())){
+            if(startingPoints[i].distanceTravelled(graph.getWeights()) < fastest.distanceTravelled(graph.getWeights())){
                 fastest = startingPoints[i];
             }
         }
@@ -39,36 +43,36 @@ public class GreedyAlgo extends Algorithm{
         return fastest;
     }
 
-    private Member genFromGreed(int startingPoint){
+    private TravelingSalesmanSolution genFromGreed(int startingPoint){
         int[] genotype = new int[startingPoints.length];
 
         for(int i = 0; i < genotype.length; i++){
             genotype[i] = -1;
         }
 
+        var usedVertices = new HashSet<Integer>();
         genotype[0] = startingPoint;
+        usedVertices.add(startingPoint);
 
-        for(int i = 1; i < startingPoints.length; i++){
+        for(int i = 0; i < startingPoints.length-1; i++){
             int closest = -1;
 
             for(int x = 0; x < graph.getSize(); x++){
-                boolean contains = false;
 
-                int j = 0;
-                while(genotype[j] != -1 && j++ < genotype.length){
-                    if(genotype[j] == x){
-                        contains = true;
-                    }
-                }
-
-                if(closest == -1 || !contains && graph.getAdjacency()[genotype[i-1]][x] < graph.getAdjacency()[genotype[i-1]][closest]){
+                if(genotype[i] != x && !usedVertices.contains(x) && (closest == -1 || graph.getWeights()[genotype[i]][x] < graph.getWeights()[genotype[i]][closest])){
                     closest = x;
                 }
             }
 
-            genotype[i] = closest;
+            genotype[i+1] = closest;
+            usedVertices.add(closest);
         }
 
-        return new Member(genotype);
+        return new TravelingSalesmanSolution(genotype);
+    }
+
+    public double solutionLength(){
+        return path.getLengthOfJourney();
     }
 }
+
